@@ -1,4 +1,4 @@
-name: build-and-upload
+name: build-for-infinityfree
 
 on:
   push:
@@ -12,21 +12,49 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Set up Erlang and Gleam
+      # 1. Setup Erlang and Gleam
       - uses: erlef/setup-beam@v1
         with:
           otp-version: "27.0"
           gleam-version: "latest"
 
-      # Download dependencies
+      # 2. Download dependencies
       - run: gleam deps download
 
-      # Build the project specifically for production JavaScript
+      # 3. Compile the Lustre frontend to production JavaScript
       - run: gleam build --target=javascript
 
-      # Upload the compiled JS build folder as an artifact zip
-      - name: Upload JavaScript Build Artifact
+      # 4. Create a deployment staging directory
+      - name: Prepare Staging Folder
+        run: |
+          mkdir -p deploy_dist
+          
+          # Copy your compiled JavaScript files into the deploy folder
+          # Note: Adjust the 'my_if_game' folder name if your project has a different name in gleam.toml
+          cp -r build/dev/javascript/* deploy_dist/
+
+      # 5. Create the index.html dynamically inside the deploy folder
+      - name: Create index.html
+        run: |
+          cat << 'EOF' > deploy_dist/index.html
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>My If Game</title>
+          </head>
+          <body>
+              <div id="app"></div>
+              
+              <script type="module" src="./my_if_game/main.mjs"></script>
+          </body>
+          </html>
+          EOF
+
+      # 6. Upload the folder containing both index.html and your JS modules as a single ZIP
+      - name: Upload InfinityFree Ready ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: lustre-javascript-build
-          path: build/dev/javascript/     # This paths directly to your compiled JS files
+          name: infinityfree-htdocs-upload
+          path: deploy_dist/
