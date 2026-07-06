@@ -1,0 +1,53 @@
+name: Deploy Game to GitHub Pages
+
+on:
+  push:
+    branches: [ "main" ]
+
+# Grant permissions to write to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps: deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Gleam
+        uses: gleam-lang/setup-gleam@v3
+        with:
+          gleam-version: 'latest'
+
+      - name: Build Raw JS Modules
+        run: |
+          gleam deps download
+          gleam build --target javascript
+
+      - name: Prepare Deployment Directory
+        run: |
+          mkdir -p dist
+          cp -r build/dev/javascript/* dist/
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload root folder containing index.html and the new dist/ folder
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
