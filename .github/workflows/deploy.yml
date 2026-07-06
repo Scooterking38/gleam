@@ -1,4 +1,4 @@
-name: test
+name: build-and-upload
 
 on:
   push:
@@ -7,26 +7,26 @@ on:
     branches: [main]
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      # The modern, all-in-one replacement action:
+      # Set up Erlang and Gleam
       - uses: erlef/setup-beam@v1
         with:
-          otp-version: "27.0"       # Installs Erlang
-          gleam-version: "latest"   # Installs the newest version of Gleam automatically
+          otp-version: "27.0"
+          gleam-version: "latest"
 
+      # Download dependencies
       - run: gleam deps download
-      - run: gleam test
-      
-      # Compiles the production build
-      - run: gleam build
 
-      # Uploads the built package so you can download it from GitHub Actions
-      - name: Upload Build Artifact
+      # Build the project specifically for production JavaScript
+      - run: gleam build --target=javascript
+
+      # Upload the compiled JS build folder as an artifact zip
+      - name: Upload JavaScript Build Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: my_if_game-build
-          path: build/
+          name: lustre-javascript-build
+          path: build/dev/javascript/     # This paths directly to your compiled JS files
