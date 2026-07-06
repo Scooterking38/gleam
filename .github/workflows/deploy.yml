@@ -1,45 +1,22 @@
-name: Deploy Game to GitHub Pages
+name: test
 
 on:
   push:
-    branches: [ "main" ]
-
-# Grant permissions to write to GitHub Pages
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Gleam
-        uses: gleam-lang/setup-gleam@v1
+      # The modern, all-in-one replacement action:
+      - uses: erlef/setup-beam@v1
         with:
-          gleam-version: 'latest'
+          otp-version: "27.0"       # Installs Erlang
+          gleam-version: "latest"   # Installs the newest version of Gleam automatically
 
-      - name: Build Raw JS Modules
-        run: |
-          gleam deps download
-          gleam build --target javascript
-
-      - name: Prepare Deployment Directory
-        run: |
-          mkdir -p dist
-          cp -r build/dev/javascript/* dist/
-
-      - name: Upload Artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: '.'
+      - run: gleam deps download
+      - run: gleam test
