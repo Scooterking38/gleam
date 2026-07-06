@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Gleam
-        uses: gleam-lang/setup-gleam@v3
+        uses: gleam-lang/setup-gleam@v1
         with:
           gleam-version: 'latest'
 
@@ -39,14 +39,7 @@ jobs:
           mkdir -p dist
           cp -r build/dev/javascript/* dist/
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-
       - name: Upload Artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: '.'
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
