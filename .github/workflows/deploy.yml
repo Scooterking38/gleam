@@ -20,3 +20,13 @@ jobs:
 
       - run: gleam deps download
       - run: gleam test
+      
+      # Compiles the production build
+      - run: gleam build
+
+      # Uploads the built package so you can download it from GitHub Actions
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: my_if_game-build
+          path: build/
