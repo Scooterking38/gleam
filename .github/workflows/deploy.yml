@@ -18,7 +18,7 @@ jobs:
   deploy:
     environment:
       name: github-pages
-      url: ${{ steps: deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -45,7 +45,6 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload root folder containing index.html and the new dist/ folder
           path: '.'
 
       - name: Deploy to GitHub Pages
